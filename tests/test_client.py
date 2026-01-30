@@ -1,7 +1,6 @@
 """Tests for og_pilot.client module."""
 
 from datetime import datetime
-from unittest.mock import MagicMock, patch
 
 import pytest
 import responses

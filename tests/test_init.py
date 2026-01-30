@@ -3,8 +3,6 @@
 import os
 from unittest.mock import patch
 
-import pytest
-
 import og_pilot
 from og_pilot import Client, Configuration
 

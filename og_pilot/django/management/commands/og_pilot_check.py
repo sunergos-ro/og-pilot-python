@@ -58,7 +58,7 @@ class Command(BaseCommand):
                     template="default",
                     title="OG Pilot Test Image",
                 )
-                self.stdout.write(self.style.SUCCESS(f"  Success! Generated URL:"))
+                self.stdout.write(self.style.SUCCESS("  Success! Generated URL:"))
                 self.stdout.write(f"  {url}")
             except ConfigurationError as e:
                 self.stdout.write(self.style.ERROR(f"  Configuration Error: {e}"))

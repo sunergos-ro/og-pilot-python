@@ -7,7 +7,6 @@ Configuration management for the OG Pilot SDK.
 import os
 from dataclasses import dataclass, field
 
-
 DEFAULT_BASE_URL = "https://ogpilot.com"
 
 

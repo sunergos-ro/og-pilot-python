@@ -3,9 +3,7 @@
 import os
 from unittest.mock import patch
 
-import pytest
-
-from og_pilot.config import Configuration, DEFAULT_BASE_URL
+from og_pilot.config import DEFAULT_BASE_URL, Configuration
 
 
 class TestConfiguration:

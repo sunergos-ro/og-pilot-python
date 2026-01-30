@@ -110,13 +110,13 @@ class Client:
             return response
 
         except requests.exceptions.SSLError as e:
-            raise RequestError(f"OG Pilot request failed with SSL error: {e}")
+            raise RequestError(f"OG Pilot request failed with SSL error: {e}") from e
         except requests.exceptions.ConnectTimeout as e:
-            raise RequestError(f"OG Pilot request timed out during connection: {e}")
+            raise RequestError(f"OG Pilot request timed out during connection: {e}") from e
         except requests.exceptions.ReadTimeout as e:
-            raise RequestError(f"OG Pilot request timed out during read: {e}")
+            raise RequestError(f"OG Pilot request timed out during read: {e}") from e
         except requests.exceptions.RequestException as e:
-            raise RequestError(f"OG Pilot request failed: {e}")
+            raise RequestError(f"OG Pilot request failed: {e}") from e
 
     def _build_url(self, params: dict, iat: int | float | datetime | None) -> str:
         """Build the signed URL for the image request."""

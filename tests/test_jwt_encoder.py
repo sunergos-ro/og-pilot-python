@@ -1,7 +1,6 @@
 """Tests for og_pilot.jwt_encoder module."""
 
 import jwt
-import pytest
 
 from og_pilot.jwt_encoder import ALGORITHM, encode
 

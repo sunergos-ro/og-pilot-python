@@ -6,7 +6,6 @@ JWT encoding utilities using HS256 algorithm.
 
 import jwt
 
-
 ALGORITHM = "HS256"
 
 
