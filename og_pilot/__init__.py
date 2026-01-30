@@ -10,7 +10,7 @@ from og_pilot.client import Client
 from og_pilot.config import Configuration
 from og_pilot.exceptions import ConfigurationError, OgPilotError, RequestError
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __all__ = [
     "Client",
     "Configuration",
