@@ -1,0 +1,121 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "og-pilot"
+version = "0.1.0"
+description = "Python client for the OG Pilot Open Graph image generator with Django integration"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Sunergos IT LLC", email = "office@sunergos.ro" },
+    { name = "Raul Popadineti", email = "raul@sunergos.ro" },
+]
+keywords = [
+    "og-pilot",
+    "open-graph",
+    "og-image",
+    "social-media",
+    "meta-tags",
+    "django",
+    "seo",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Framework :: Django :: 5.1",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "pyjwt>=2.0.0",
+    "requests>=2.25.0",
+]
+
+[project.optional-dependencies]
+django = [
+    "django>=4.2",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "responses>=0.23.0",
+    "django>=4.2",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+    "types-requests>=2.31.0",
+]
+
+[project.urls]
+Homepage = "https://ogpilot.com"
+Documentation = "https://ogpilot.com/docs"
+Repository = "https://github.com/sunergos-ro/og-pilot-python"
+Issues = "https://github.com/sunergos-ro/og-pilot-python/issues"
+Changelog = "https://github.com/sunergos-ro/og-pilot-python/commits/main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["og_pilot"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/og_pilot",
+    "/tests",
+    "README.md",
+    "LICENSE",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["og_pilot"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["og_pilot"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
