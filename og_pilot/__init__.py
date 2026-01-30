@@ -4,6 +4,8 @@ OG Pilot Python SDK
 A Python client for generating OG Pilot Open Graph images via signed JWTs.
 """
 
+from typing import Any
+
 from og_pilot.client import Client
 from og_pilot.config import Configuration
 from og_pilot.exceptions import ConfigurationError, OgPilotError, RequestError
@@ -35,7 +37,7 @@ def get_config() -> Configuration:
     return _config
 
 
-def configure(**kwargs) -> Configuration:
+def configure(**kwargs: Any) -> Configuration:
     """
     Configure the global OG Pilot client.
 
@@ -77,7 +79,7 @@ def client() -> Client:
     return Client(get_config())
 
 
-def create_client(**kwargs) -> Client:
+def create_client(**kwargs: Any) -> Client:
     """
     Create a new client with custom configuration.
 
@@ -103,25 +105,25 @@ def create_client(**kwargs) -> Client:
 
 
 def create_image(
-    params: dict | None = None,
+    params: dict[str, Any] | None = None,
     *,
-    json: bool = False,
+    json_response: bool = False,
     iat: int | float | None = None,
     headers: dict[str, str] | None = None,
-    **kwargs,
-) -> str | dict:
+    **kwargs: Any,
+) -> str | dict[str, Any]:
     """
     Generate an OG Pilot image URL using the global configuration.
 
     Args:
         params: Dictionary of template parameters
-        json: If True, return JSON metadata instead of URL
+        json_response: If True, return JSON metadata instead of URL
         iat: Issue time for cache busting (Unix timestamp or datetime)
         headers: Additional HTTP headers
         **kwargs: Additional template parameters (merged with params)
 
     Returns:
-        Image URL string or JSON metadata dict if json=True
+        Image URL string or JSON metadata dict if json_response=True
 
     Example:
         >>> import og_pilot
@@ -133,4 +135,4 @@ def create_image(
         ... )
     """
     merged_params = {**(params or {}), **kwargs}
-    return client().create_image(merged_params, json=json, iat=iat, headers=headers)
+    return client().create_image(merged_params, json_response=json_response, iat=iat, headers=headers)

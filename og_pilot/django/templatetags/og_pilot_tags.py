@@ -15,6 +15,7 @@ Usage in templates:
 """
 
 import time
+from typing import Any
 
 from django import template
 
@@ -28,7 +29,7 @@ def og_pilot_url(
     title: str,
     template: str = "default",
     iat: int | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> str:
     """
     Generate an OG Pilot image URL.
@@ -56,7 +57,9 @@ def og_pilot_url(
         # Round to start of day for daily cache busting
         iat = int(time.time()) // 86400 * 86400
 
-    return og_pilot.create_image(params, iat=iat)
+    result = og_pilot.create_image(params, iat=iat)
+    # create_image returns str when json_response=False (the default)
+    return str(result)
 
 
 @register.simple_tag
@@ -64,7 +67,7 @@ def og_pilot_image(
     title: str,
     template: str = "default",
     iat: int | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> str:
     """
     Alias for og_pilot_url for semantic clarity.
@@ -72,7 +75,7 @@ def og_pilot_image(
     Example:
         {% og_pilot_image title="My Blog Post" template="blog" as og_url %}
     """
-    return og_pilot_url(title=title, template=template, iat=iat, **kwargs)
+    return str(og_pilot_url(title=title, template=template, iat=iat, **kwargs))
 
 
 @register.inclusion_tag("og_pilot/meta_tags.html")
@@ -81,8 +84,8 @@ def og_pilot_meta_tags(
     description: str = "",
     template: str = "default",
     site_name: str = "",
-    **kwargs,
-) -> dict:
+    **kwargs: Any,
+) -> dict[str, str]:
     """
     Render complete Open Graph meta tags with OG Pilot image.
 

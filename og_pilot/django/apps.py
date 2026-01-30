@@ -13,7 +13,7 @@ class OgPilotConfig(AppConfig):
     verbose_name = "OG Pilot"
     default_auto_field = "django.db.models.BigAutoField"
 
-    def ready(self):
+    def ready(self) -> None:
         """Configure OG Pilot from Django settings when the app is ready."""
         import og_pilot
 

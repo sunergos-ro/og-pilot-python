@@ -6,9 +6,9 @@ HTTP client for the OG Pilot API.
 
 from __future__ import annotations
 
-import json
+import json as json_module
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import urlencode, urljoin
 
 import requests
@@ -45,12 +45,12 @@ class Client:
 
     def create_image(
         self,
-        params: dict | None = None,
+        params: dict[str, Any] | None = None,
         *,
         json_response: bool = False,
         iat: int | float | datetime | None = None,
         headers: dict[str, str] | None = None,
-    ) -> str | dict:
+    ) -> str | dict[str, Any]:
         """
         Generate an OG Pilot image URL or fetch JSON metadata.
 
@@ -73,7 +73,7 @@ class Client:
         response = self._request(url, json_response=json_response, headers=headers or {})
 
         if json_response:
-            return json.loads(response.text)
+            return cast(dict[str, Any], json_module.loads(response.text))
 
         # Return the redirect location or the final URL
         return response.headers.get("Location") or response.url or str(url)
@@ -118,14 +118,14 @@ class Client:
         except requests.exceptions.RequestException as e:
             raise RequestError(f"OG Pilot request failed: {e}") from e
 
-    def _build_url(self, params: dict, iat: int | float | datetime | None) -> str:
+    def _build_url(self, params: dict[str, Any], iat: int | float | datetime | None) -> str:
         """Build the signed URL for the image request."""
         payload = self._build_payload(params, iat)
         token = jwt_encoder.encode(payload, self._api_key)
         base_url = urljoin(self.config.base_url, ENDPOINT_PATH)
         return f"{base_url}?{urlencode({'token': token})}"
 
-    def _build_payload(self, params: dict, iat: int | float | datetime | None) -> dict:
+    def _build_payload(self, params: dict[str, Any], iat: int | float | datetime | None) -> dict[str, Any]:
         """Build the JWT payload with required claims."""
         payload = dict(params)
 
@@ -141,7 +141,7 @@ class Client:
         self._validate_payload(payload)
         return payload
 
-    def _validate_payload(self, payload: dict) -> None:
+    def _validate_payload(self, payload: dict[str, Any]) -> None:
         """Validate required payload fields."""
         if not payload.get("iss"):
             raise ConfigurationError("OG Pilot domain is missing")

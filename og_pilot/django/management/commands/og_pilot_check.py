@@ -4,6 +4,9 @@ OG Pilot Configuration Check Command
 Management command to verify OG Pilot configuration.
 """
 
+from argparse import ArgumentParser
+from typing import Any
+
 from django.core.management.base import BaseCommand
 
 import og_pilot
@@ -15,14 +18,14 @@ class Command(BaseCommand):
 
     help = "Check OG Pilot configuration and optionally test with a sample request"
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--test",
             action="store_true",
             help="Send a test request to verify API connectivity",
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         self.stdout.write("Checking OG Pilot configuration...\n")
 
         config = og_pilot.get_config()
