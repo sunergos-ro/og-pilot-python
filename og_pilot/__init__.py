@@ -9,8 +9,14 @@ from typing import Any
 from og_pilot.client import Client
 from og_pilot.config import Configuration
 from og_pilot.exceptions import ConfigurationError, OgPilotError, RequestError
+from og_pilot.request_context import (
+    clear_current_request,
+    get_current_request,
+    set_current_request,
+    with_request_context,
+)
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 __all__ = [
     "Client",
     "Configuration",
@@ -23,6 +29,11 @@ __all__ = [
     "client",
     "create_client",
     "create_image",
+    # Request context functions
+    "set_current_request",
+    "clear_current_request",
+    "get_current_request",
+    "with_request_context",
 ]
 
 # Global configuration instance
@@ -110,6 +121,7 @@ def create_image(
     json_response: bool = False,
     iat: int | float | None = None,
     headers: dict[str, str] | None = None,
+    default: bool = False,
     **kwargs: Any,
 ) -> str | dict[str, Any]:
     """
@@ -120,6 +132,7 @@ def create_image(
         json_response: If True, return JSON metadata instead of URL
         iat: Issue time for cache busting (Unix timestamp or datetime)
         headers: Additional HTTP headers
+        default: If True, force path to "/" regardless of current request
         **kwargs: Additional template parameters (merged with params)
 
     Returns:
@@ -135,4 +148,10 @@ def create_image(
         ... )
     """
     merged_params = {**(params or {}), **kwargs}
-    return client().create_image(merged_params, json_response=json_response, iat=iat, headers=headers)
+    return client().create_image(
+        merged_params,
+        json_response=json_response,
+        iat=iat,
+        headers=headers,
+        default=default,
+    )

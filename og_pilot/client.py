@@ -9,12 +9,13 @@ from __future__ import annotations
 import json as json_module
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode, urljoin, urlparse
 
 import requests
 
 from og_pilot import jwt_encoder
 from og_pilot.exceptions import ConfigurationError, RequestError
+from og_pilot.request_context import get_current_path
 
 if TYPE_CHECKING:
     from og_pilot.config import Configuration
@@ -50,6 +51,7 @@ class Client:
         json_response: bool = False,
         iat: int | float | datetime | None = None,
         headers: dict[str, str] | None = None,
+        default: bool = False,
     ) -> str | dict[str, Any]:
         """
         Generate an OG Pilot image URL or fetch JSON metadata.
@@ -60,6 +62,7 @@ class Client:
             iat: Issue time for cache busting. Can be Unix timestamp (int/float)
                  or datetime object. If omitted, image is cached indefinitely.
             headers: Additional HTTP headers to send with the request
+            default: If True, force path to "/" regardless of current request
 
         Returns:
             Image URL string, or JSON metadata dict if json_response=True
@@ -69,7 +72,12 @@ class Client:
             RequestError: If the API request fails
             ValueError: If required parameters are missing
         """
-        url = self._build_url(params or {}, iat)
+        # Always include a path; manual overrides win, otherwise resolve from current request
+        resolved_params = dict(params or {})
+        manual_path = resolved_params.pop("path", None)
+        resolved_params["path"] = self._resolve_path(manual_path, default)
+
+        url = self._build_url(resolved_params, iat)
         response = self._request(url, json_response=json_response, headers=headers or {})
 
         if json_response:
@@ -77,6 +85,50 @@ class Client:
 
         # Return the redirect location or the final URL
         return response.headers.get("Location") or response.url or str(url)
+
+    def _resolve_path(self, manual_path: Any, use_default: bool) -> str:
+        """
+        Resolve the path parameter for the request.
+
+        Priority: manual path > current request path > "/"
+        """
+        # Manual path always wins if provided
+        if manual_path is not None:
+            path_str = str(manual_path).strip()
+            if path_str:
+                return self._normalize_path(path_str)
+
+        # If default is true, return "/"
+        if use_default:
+            return "/"
+
+        # Try to get path from current request context
+        current_path = get_current_path()
+        return self._normalize_path(current_path)
+
+    def _normalize_path(self, path: str | None) -> str:
+        """
+        Normalize a path to ensure it starts with "/" and handles full URLs.
+        """
+        if path is None or path == "":
+            return "/"
+
+        cleaned = path.strip()
+        if not cleaned:
+            return "/"
+
+        # Extract path from full URLs
+        if cleaned.startswith(("http://", "https://")):
+            parsed = urlparse(cleaned)
+            url_path = parsed.path or "/"
+            query = parsed.query
+            cleaned = f"{url_path}?{query}" if query else url_path
+
+        # Ensure path starts with "/"
+        if not cleaned.startswith("/"):
+            cleaned = "/" + cleaned
+
+        return cleaned
 
     def _request(
         self,

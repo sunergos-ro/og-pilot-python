@@ -84,9 +84,133 @@ url = og_pilot.create_image(
 data = og_pilot.create_image(
     title="Hello OG Pilot",
     template="page",
-    json=True
+    json_response=True
 )
 print(data)  # {"url": "...", "width": 1200, "height": 630, ...}
+```
+
+## Path Handling
+
+The `path` parameter enhances OG Pilot analytics by tracking which OG images perform better across different pages on your site. By capturing the request path, you get granular insights into click-through rates and engagement for each OG image.
+
+The client automatically injects a `path` parameter on every request:
+
+| Option | Behavior |
+|--------|----------|
+| `default=False` | Uses the current request path when available (via request context or env vars), then falls back to `/` |
+| `default=True` | Forces the `path` parameter to `/`, regardless of the current request (unless `path` is provided explicitly) |
+| `path="/..."` | Uses the provided path verbatim (normalized to start with `/`), overriding auto-resolution |
+
+### Automatic Framework Detection
+
+The SDK automatically detects the current request path from popular frameworks - **no middleware setup required** for most cases:
+
+**Flask** - Works automatically, no setup needed:
+
+```python
+from flask import Flask
+import og_pilot
+
+app = Flask(__name__)
+og_pilot.configure(api_key="...", domain="example.com")
+
+@app.route('/blog/<slug>')
+def blog_post(slug):
+    # Path is automatically captured from flask.request
+    url = og_pilot.create_image(title="My Post", template="blog")
+    return render_template('post.html', og_image=url)
+```
+
+**Django with django-crequest** - Install `django-crequest` for automatic detection:
+
+```bash
+pip install django-crequest
+```
+
+```python
+# settings.py
+MIDDLEWARE = [
+    # ...
+    'crequest.middleware.CrequestMiddleware',
+]
+```
+
+Then it works automatically in your views:
+
+```python
+import og_pilot
+
+def blog_post(request, slug):
+    # Path is automatically captured
+    url = og_pilot.create_image(title="My Post", template="blog")
+    return render(request, 'post.html', {'og_image': url})
+```
+
+### Manual Setup (Optional)
+
+If automatic detection doesn't work for your setup, you can manually set the request context:
+
+**Django Middleware (without django-crequest):**
+
+```python
+from og_pilot import set_current_request, clear_current_request
+
+class OgPilotMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        set_current_request({'url': request.get_full_path()})
+        try:
+            return self.get_response(request)
+        finally:
+            clear_current_request()
+```
+
+**FastAPI:**
+
+```python
+from og_pilot import set_current_request, clear_current_request
+
+@app.middleware("http")
+async def og_pilot_middleware(request: Request, call_next):
+    set_current_request({'url': str(request.url.path)})
+    try:
+        return await call_next(request)
+    finally:
+        clear_current_request()
+```
+
+**Using with_request_context:**
+
+```python
+from og_pilot import with_request_context, create_image
+
+url = with_request_context(
+    {'url': '/blog/my-post'},
+    lambda: create_image(title="My Blog Post", template="blog")
+)
+```
+
+### Manual Path Override
+
+```python
+url = og_pilot.create_image(
+    template="page",
+    title="Hello OG Pilot",
+    path="/pricing?plan=pro"
+)
+```
+
+### Default Path
+
+```python
+url = og_pilot.create_image(
+    template="blog_post",
+    title="Default OG Image",
+    default=True
+)
+# path is set to "/"
 ```
 
 ### Custom Client Instance
