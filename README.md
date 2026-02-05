@@ -1,5 +1,8 @@
 # OG Pilot Python
 
+> [!IMPORTANT]  
+> An active [OG Pilot](https://ogpilot.com?ref=og-pilot-python) subscription is required to use this package.
+
 A Python client for generating OG Pilot Open Graph images via signed JWTs, with first-class Django integration.
 
 ## Installation
