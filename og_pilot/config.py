@@ -21,6 +21,7 @@ class Configuration:
         base_url: OG Pilot API base URL. Defaults to https://ogpilot.com.
         open_timeout: Connection timeout in seconds. Defaults to 5.
         read_timeout: Read timeout in seconds. Defaults to 10.
+        strip_extensions: When True, file extensions are removed from resolved paths. Defaults to True.
     """
 
     api_key: str | None = field(default_factory=lambda: os.environ.get("OG_PILOT_API_KEY"))
@@ -28,3 +29,4 @@ class Configuration:
     base_url: str = DEFAULT_BASE_URL
     open_timeout: float = 5.0
     read_timeout: float = 10.0
+    strip_extensions: bool = True

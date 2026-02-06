@@ -128,7 +128,48 @@ class Client:
         if not cleaned.startswith("/"):
             cleaned = "/" + cleaned
 
+        if self.config.strip_extensions:
+            cleaned = self._strip_extension(cleaned)
+
         return cleaned
+
+    def _strip_extension(self, path: str) -> str:
+        """
+        Strip file extensions from the last path segment.
+
+        Removes all extensions (e.g., /archive.tar.gz -> /archive).
+        Dotfiles like /.hidden are left unchanged.
+        """
+        question_idx = path.find("?")
+        if question_idx >= 0:
+            path_part = path[:question_idx]
+            query = path[question_idx + 1:]
+        else:
+            path_part = path
+            query = None
+
+        last_slash = path_part.rfind("/")
+        if last_slash >= 0:
+            dir_part = path_part[:last_slash]
+            base = path_part[last_slash + 1:]
+        else:
+            dir_part = ""
+            base = path_part
+
+        # Don't strip dotfiles like ".hidden" or ".env"
+        if base.startswith("."):
+            return path
+
+        dot_idx = base.find(".")
+        if dot_idx < 0:
+            return path  # no extension to strip
+
+        stripped = base[:dot_idx]
+        result = f"{dir_part}/{stripped}" if dir_part else f"/{stripped}"
+        if not result:
+            result = "/"
+
+        return f"{result}?{query}" if query is not None else result
 
     def _request(
         self,

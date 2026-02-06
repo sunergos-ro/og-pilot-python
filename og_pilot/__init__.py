@@ -65,6 +65,7 @@ def configure(**kwargs: Any) -> Configuration:
         base_url: OG Pilot API base URL (default: https://ogpilot.com)
         open_timeout: Connection timeout in seconds (default: 5)
         read_timeout: Read timeout in seconds (default: 10)
+        strip_extensions: When True, file extensions are removed from resolved paths (default: True)
 
     Returns:
         The updated Configuration instance
@@ -107,6 +108,7 @@ def create_client(**kwargs: Any) -> Client:
         base_url: OG Pilot API base URL
         open_timeout: Connection timeout in seconds
         read_timeout: Read timeout in seconds
+        strip_extensions: When True, file extensions are removed from resolved paths (default: True)
 
     Returns:
         A new Client instance

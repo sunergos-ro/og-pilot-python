@@ -27,7 +27,8 @@ import og_pilot
 # Configure globally (reads from OG_PILOT_API_KEY and OG_PILOT_DOMAIN env vars by default)
 og_pilot.configure(
     api_key="your-api-key",
-    domain="example.com"
+    domain="example.com",
+    # strip_extensions=True,
 )
 
 # Generate an image URL
@@ -238,6 +239,33 @@ url = og_pilot.create_image(
 # path is set to "/"
 ```
 
+### Strip extensions
+
+When `strip_extensions` is enabled, the client removes file extensions from the
+last segment of every resolved path. This ensures that `/docs`, `/docs.md`,
+`/docs.php`, and `/docs.html` all resolve to `"/docs"`, so analytics are
+consolidated under a single path regardless of the URL extension.
+
+Multiple extensions are also stripped (`/archive.tar.gz` becomes `/archive`).
+Dotfiles like `/.hidden` are left unchanged. Query strings are preserved.
+
+```python
+og_pilot.configure(
+    api_key="your-api-key",
+    domain="example.com",
+    strip_extensions=True,
+)
+
+# All of these resolve to path "/docs":
+og_pilot.create_image(title="Docs", path="/docs")
+og_pilot.create_image(title="Docs", path="/docs.md")
+og_pilot.create_image(title="Docs", path="/docs.php")
+
+# Nested paths work too: /blog/my-post.html → /blog/my-post
+# Query strings are preserved: /docs.md?ref=main → /docs?ref=main
+# Dotfiles are unchanged: /.hidden stays /.hidden
+```
+
 ### Custom Client Instance
 
 For multiple configurations or dependency injection:
@@ -280,6 +308,7 @@ OG_PILOT = {
     # 'BASE_URL': 'https://ogpilot.com',
     # 'OPEN_TIMEOUT': 5,
     # 'READ_TIMEOUT': 10,
+    # 'STRIP_EXTENSIONS': True,
 }
 
 # Option 2: Using environment variables (no settings needed)
@@ -368,6 +397,7 @@ Create `templates/og_pilot/meta_tags.html` in your project to customize the outp
 | `base_url` | - | `https://ogpilot.com` | OG Pilot API URL |
 | `open_timeout` | - | `5` | Connection timeout (seconds) |
 | `read_timeout` | - | `10` | Read timeout (seconds) |
+| `strip_extensions` | - | `True` | Strip file extensions from resolved paths (see [Strip extensions](#strip-extensions)) |
 
 ## Error Handling
 
