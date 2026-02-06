@@ -55,7 +55,7 @@ export OG_PILOT_DOMAIN="example.com"
 import og_pilot
 
 # No configuration needed - uses env vars
-url = og_pilot.create_image(title="My Page", template="default")
+url = og_pilot.create_image(title="My Page")
 ```
 
 ### Cache Busting with `iat`
@@ -69,15 +69,37 @@ from datetime import datetime
 # Using Unix timestamp
 url = og_pilot.create_image(
     title="My Post",
-    template="blog",
+    template="blog_post",
     iat=int(time.time())  # Changes daily
 )
 
 # Using datetime
 url = og_pilot.create_image(
     title="My Post",
-    template="blog",
+    template="blog_post",
     iat=datetime.now()
+)
+```
+
+### Template helpers
+
+`create_image` defaults to the `page` template when `template` is omitted.
+
+Use these helpers to force a specific template:
+
+- `og_pilot.create_blog_post_image(...)`
+- `og_pilot.create_podcast_image(...)`
+- `og_pilot.create_product_image(...)`
+- `og_pilot.create_event_image(...)`
+- `og_pilot.create_book_image(...)`
+- `og_pilot.create_company_image(...)`
+- `og_pilot.create_portfolio_image(...)`
+
+```python
+image_url = og_pilot.create_blog_post_image(
+    title="How to Build Amazing OG Images",
+    author_name="Jane Smith",
+    publish_date="2024-01-15"
 )
 ```
 
@@ -120,7 +142,7 @@ og_pilot.configure(api_key="...", domain="example.com")
 @app.route('/blog/<slug>')
 def blog_post(slug):
     # Path is automatically captured from flask.request
-    url = og_pilot.create_image(title="My Post", template="blog")
+    url = og_pilot.create_image(title="My Post", template="blog_post")
     return render_template('post.html', og_image=url)
 ```
 
@@ -145,7 +167,7 @@ import og_pilot
 
 def blog_post(request, slug):
     # Path is automatically captured
-    url = og_pilot.create_image(title="My Post", template="blog")
+    url = og_pilot.create_image(title="My Post", template="blog_post")
     return render(request, 'post.html', {'og_image': url})
 ```
 
@@ -191,7 +213,7 @@ from og_pilot import with_request_context, create_image
 
 url = with_request_context(
     {'url': '/blog/my-post'},
-    lambda: create_image(title="My Blog Post", template="blog")
+    lambda: create_image(title="My Blog Post", template="blog_post")
 )
 ```
 
@@ -285,10 +307,10 @@ python manage.py og_pilot_check --test  # Also sends a test request
     <meta property="og:title" content="{{ page.title }}" />
 
     <!-- Option 2: Simple tag (outputs URL directly) -->
-    <meta property="og:image" content="{% og_pilot_url title=page.title template='default' %}" />
+    <meta property="og:image" content="{% og_pilot_url title=page.title template='page' %}" />
 
     <!-- Option 3: Complete meta tags (requires template) -->
-    {% og_pilot_meta_tags title=page.title description=page.description template="blog" %}
+    {% og_pilot_meta_tags title=page.title description=page.description template="blog_post" %}
 </head>
 <body>
     ...
@@ -354,7 +376,7 @@ from og_pilot import create_image
 from og_pilot.exceptions import ConfigurationError, RequestError
 
 try:
-    url = create_image(title="My Post", template="blog")
+    url = create_image(title="My Post", template="blog_post")
 except ConfigurationError as e:
     # Missing API key or domain
     print(f"Configuration error: {e}")
@@ -377,7 +399,14 @@ except ValueError as e:
 - `og_pilot.get_config()` - Get the current configuration
 - `og_pilot.client()` - Get a client using global config
 - `og_pilot.create_client(**kwargs)` - Create a new client with custom config
-- `og_pilot.create_image(params, *, json=False, iat=None, headers=None, **kwargs)` - Generate image URL
+- `og_pilot.create_image(params, *, json_response=False, iat=None, headers=None, default=False, **kwargs)` - Generate image URL (defaults to `page` template)
+- `og_pilot.create_blog_post_image(...)`
+- `og_pilot.create_podcast_image(...)`
+- `og_pilot.create_product_image(...)`
+- `og_pilot.create_event_image(...)`
+- `og_pilot.create_book_image(...)`
+- `og_pilot.create_company_image(...)`
+- `og_pilot.create_portfolio_image(...)`
 
 ### Client Class
 
@@ -389,7 +418,7 @@ client = Client(config)
 
 # Generate URL
 url = client.create_image(
-    params={"template": "default", "title": "Hello"},
+    params={"template": "page", "title": "Hello"},
     json_response=False,  # Set True for JSON metadata
     iat=None,             # Optional cache busting timestamp
     headers={},           # Optional additional headers

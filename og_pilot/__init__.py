@@ -29,6 +29,13 @@ __all__ = [
     "client",
     "create_client",
     "create_image",
+    "create_blog_post_image",
+    "create_podcast_image",
+    "create_product_image",
+    "create_event_image",
+    "create_book_image",
+    "create_company_image",
+    "create_portfolio_image",
     # Request context functions
     "set_current_request",
     "clear_current_request",
@@ -148,6 +155,173 @@ def create_image(
         ... )
     """
     merged_params = {**(params or {}), **kwargs}
+    return client().create_image(
+        merged_params,
+        json_response=json_response,
+        iat=iat,
+        headers=headers,
+        default=default,
+    )
+
+
+def create_blog_post_image(
+    params: dict[str, Any] | None = None,
+    *,
+    json_response: bool = False,
+    iat: int | float | None = None,
+    headers: dict[str, str] | None = None,
+    default: bool = False,
+    **kwargs: Any,
+) -> str | dict[str, Any]:
+    """Generate a blog post image URL using template='blog_post'."""
+    return _create_template_image(
+        "blog_post",
+        params=params,
+        json_response=json_response,
+        iat=iat,
+        headers=headers,
+        default=default,
+        **kwargs,
+    )
+
+
+def create_podcast_image(
+    params: dict[str, Any] | None = None,
+    *,
+    json_response: bool = False,
+    iat: int | float | None = None,
+    headers: dict[str, str] | None = None,
+    default: bool = False,
+    **kwargs: Any,
+) -> str | dict[str, Any]:
+    """Generate a podcast image URL using template='podcast'."""
+    return _create_template_image(
+        "podcast",
+        params=params,
+        json_response=json_response,
+        iat=iat,
+        headers=headers,
+        default=default,
+        **kwargs,
+    )
+
+
+def create_product_image(
+    params: dict[str, Any] | None = None,
+    *,
+    json_response: bool = False,
+    iat: int | float | None = None,
+    headers: dict[str, str] | None = None,
+    default: bool = False,
+    **kwargs: Any,
+) -> str | dict[str, Any]:
+    """Generate a product image URL using template='product'."""
+    return _create_template_image(
+        "product",
+        params=params,
+        json_response=json_response,
+        iat=iat,
+        headers=headers,
+        default=default,
+        **kwargs,
+    )
+
+
+def create_event_image(
+    params: dict[str, Any] | None = None,
+    *,
+    json_response: bool = False,
+    iat: int | float | None = None,
+    headers: dict[str, str] | None = None,
+    default: bool = False,
+    **kwargs: Any,
+) -> str | dict[str, Any]:
+    """Generate an event image URL using template='event'."""
+    return _create_template_image(
+        "event",
+        params=params,
+        json_response=json_response,
+        iat=iat,
+        headers=headers,
+        default=default,
+        **kwargs,
+    )
+
+
+def create_book_image(
+    params: dict[str, Any] | None = None,
+    *,
+    json_response: bool = False,
+    iat: int | float | None = None,
+    headers: dict[str, str] | None = None,
+    default: bool = False,
+    **kwargs: Any,
+) -> str | dict[str, Any]:
+    """Generate a book image URL using template='book'."""
+    return _create_template_image(
+        "book",
+        params=params,
+        json_response=json_response,
+        iat=iat,
+        headers=headers,
+        default=default,
+        **kwargs,
+    )
+
+
+def create_company_image(
+    params: dict[str, Any] | None = None,
+    *,
+    json_response: bool = False,
+    iat: int | float | None = None,
+    headers: dict[str, str] | None = None,
+    default: bool = False,
+    **kwargs: Any,
+) -> str | dict[str, Any]:
+    """Generate a company image URL using template='company'."""
+    return _create_template_image(
+        "company",
+        params=params,
+        json_response=json_response,
+        iat=iat,
+        headers=headers,
+        default=default,
+        **kwargs,
+    )
+
+
+def create_portfolio_image(
+    params: dict[str, Any] | None = None,
+    *,
+    json_response: bool = False,
+    iat: int | float | None = None,
+    headers: dict[str, str] | None = None,
+    default: bool = False,
+    **kwargs: Any,
+) -> str | dict[str, Any]:
+    """Generate a portfolio image URL using template='portfolio'."""
+    return _create_template_image(
+        "portfolio",
+        params=params,
+        json_response=json_response,
+        iat=iat,
+        headers=headers,
+        default=default,
+        **kwargs,
+    )
+
+
+def _create_template_image(
+    template_name: str,
+    params: dict[str, Any] | None = None,
+    *,
+    json_response: bool = False,
+    iat: int | float | None = None,
+    headers: dict[str, str] | None = None,
+    default: bool = False,
+    **kwargs: Any,
+) -> str | dict[str, Any]:
+    merged_params = {**(params or {}), **kwargs, "template": template_name}
     return client().create_image(
         merged_params,
         json_response=json_response,

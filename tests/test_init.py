@@ -87,6 +87,72 @@ class TestModuleFunctions:
             "client",
             "create_client",
             "create_image",
+            "create_blog_post_image",
+            "create_podcast_image",
+            "create_product_image",
+            "create_event_image",
+            "create_book_image",
+            "create_company_image",
+            "create_portfolio_image",
         ]
         for name in expected_exports:
             assert hasattr(og_pilot, name), f"Missing export: {name}"
+
+    def test_template_helpers_force_expected_template(self):
+        """Test that template helpers always send their template."""
+
+        class StubClient:
+            def __init__(self):
+                self.calls = []
+
+            def create_image(
+                self,
+                params,
+                *,
+                json_response=False,
+                iat=None,
+                headers=None,
+                default=False,
+            ):
+                self.calls.append(
+                    {
+                        "params": params,
+                        "json_response": json_response,
+                        "iat": iat,
+                        "headers": headers,
+                        "default": default,
+                    }
+                )
+                return "ok"
+
+        stub_client = StubClient()
+        helpers = {
+            "create_blog_post_image": "blog_post",
+            "create_podcast_image": "podcast",
+            "create_product_image": "product",
+            "create_event_image": "event",
+            "create_book_image": "book",
+            "create_company_image": "company",
+            "create_portfolio_image": "portfolio",
+        }
+
+        with patch("og_pilot.client", return_value=stub_client):
+            for helper_name, expected_template in helpers.items():
+                helper = getattr(og_pilot, helper_name)
+                result = helper(
+                    {"title": "Hello", "template": "page"},
+                    json_response=True,
+                    iat=123,
+                    headers={"X-Test": "1"},
+                    default=True,
+                    template="ignored",
+                )
+
+                assert result == "ok"
+                call = stub_client.calls[-1]
+                assert call["params"]["title"] == "Hello"
+                assert call["params"]["template"] == expected_template
+                assert call["json_response"] is True
+                assert call["iat"] == 123
+                assert call["headers"] == {"X-Test": "1"}
+                assert call["default"] is True
