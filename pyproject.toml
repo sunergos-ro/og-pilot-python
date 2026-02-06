@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "og-pilot"
-version = "0.3.0"
+version = "0.3.1"
 description = "Python client for the OG Pilot Open Graph image generator with Django integration"
 readme = "README.md"
 license = "MIT"
