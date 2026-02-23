@@ -43,8 +43,8 @@ print(image_url)
 # https://cdn.ogpilot.com/image.png
 ```
 
-The SDK sends a signed `POST` request to `https://ogpilot.com/api/v1/images?token=...`
-and returns the response `Location` URL (or JSON when `json_response=True`).
+The SDK sends a signed `POST` request to `https://ogpilot.com/api/v1/images?token=...`,
+follows redirects automatically, and returns the final image URL (or JSON when `json_response=True`).
 
 ### Using Environment Variables
 

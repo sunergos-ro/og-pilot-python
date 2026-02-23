@@ -65,7 +65,7 @@ class Client:
             default: If True, force path to "/" regardless of current request
 
         Returns:
-            Image URL string, or JSON metadata dict if json_response=True
+            Image URL string (final URL after redirects), or JSON metadata dict if json_response=True
 
         Raises:
             ConfigurationError: If API key or domain is missing
@@ -83,8 +83,8 @@ class Client:
         if json_response:
             return cast(dict[str, Any], json_module.loads(response.text))
 
-        # Return the redirect location or the final URL
-        return response.headers.get("Location") or response.url or str(url)
+        # Return the final URL after redirects (with fallbacks for unusual responses)
+        return response.url or response.headers.get("Location") or str(url)
 
     def _resolve_path(self, manual_path: Any, use_default: bool) -> str:
         """
@@ -191,7 +191,7 @@ class Client:
                 url,
                 headers=request_headers,
                 timeout=timeout,
-                allow_redirects=False,
+                allow_redirects=True,
             )
 
             if response.status_code >= 400:

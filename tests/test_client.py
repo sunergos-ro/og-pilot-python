@@ -88,26 +88,38 @@ class TestClient:
 
     @responses.activate
     def test_create_image_returns_url(self, client):
-        """Test that create_image returns the redirect location."""
+        """Test that create_image follows redirects and returns the final URL."""
         responses.add(
             responses.POST,
             "https://ogpilot.com/api/v1/images",
             status=302,
             headers={"Location": "https://cdn.ogpilot.com/image.png"},
         )
+        responses.add(
+            responses.GET,
+            "https://cdn.ogpilot.com/image.png",
+            status=200,
+            body="mock-image-bytes",
+            content_type="image/png",
+        )
 
         url = client.create_image({"title": "Test Title", "template": "default"})
         assert url == "https://cdn.ogpilot.com/image.png"
+        assert len(responses.calls) == 2
 
-        request = responses.calls[0].request
-        assert request.method == "POST"
+        first_request = responses.calls[0].request
+        assert first_request.method == "POST"
 
-        parsed = urlparse(request.url)
+        parsed = urlparse(first_request.url)
         assert parsed.path == "/api/v1/images"
         token = parse_qs(parsed.query)["token"][0]
         payload = jwt.decode(token, client.config.api_key, algorithms=["HS256"])
         assert payload["title"] == "Test Title"
         assert payload["template"] == "default"
+
+        second_request = responses.calls[1].request
+        assert second_request.method == "GET"
+        assert second_request.url == "https://cdn.ogpilot.com/image.png"
 
     @responses.activate
     def test_create_image_json_response(self, client):
