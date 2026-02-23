@@ -178,7 +178,7 @@ class Client:
         json_response: bool,
         headers: dict[str, str],
     ) -> requests.Response:
-        """Make an HTTP request to the OG Pilot API."""
+        """Make an HTTP POST request to the OG Pilot API."""
         request_headers = {}
         if json_response:
             request_headers["Accept"] = "application/json"
@@ -187,7 +187,7 @@ class Client:
         timeout = (self.config.open_timeout, self.config.read_timeout)
 
         try:
-            response = requests.get(
+            response = requests.post(
                 url,
                 headers=request_headers,
                 timeout=timeout,

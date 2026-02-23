@@ -40,8 +40,11 @@ image_url = og_pilot.create_image(
 )
 
 print(image_url)
-# https://ogpilot.com/api/v1/images?token=eyJ...
+# https://cdn.ogpilot.com/image.png
 ```
+
+The SDK sends a signed `POST` request to `https://ogpilot.com/api/v1/images?token=...`
+and returns the response `Location` URL (or JSON when `json_response=True`).
 
 ### Using Environment Variables
 
@@ -429,7 +432,7 @@ except ValueError as e:
 - `og_pilot.get_config()` - Get the current configuration
 - `og_pilot.client()` - Get a client using global config
 - `og_pilot.create_client(**kwargs)` - Create a new client with custom config
-- `og_pilot.create_image(params, *, json_response=False, iat=None, headers=None, default=False, **kwargs)` - Generate image URL (defaults to `page` template)
+- `og_pilot.create_image(params, *, json_response=False, iat=None, headers=None, default=False, **kwargs)` - Generate image URL via signed `POST /api/v1/images` (defaults to `page` template)
 - `og_pilot.create_blog_post_image(...)`
 - `og_pilot.create_podcast_image(...)`
 - `og_pilot.create_product_image(...)`

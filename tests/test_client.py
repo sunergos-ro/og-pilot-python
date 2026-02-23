@@ -1,7 +1,9 @@
 """Tests for og_pilot.client module."""
 
 from datetime import datetime
+from urllib.parse import parse_qs, urlparse
 
+import jwt
 import pytest
 import responses
 
@@ -88,7 +90,7 @@ class TestClient:
     def test_create_image_returns_url(self, client):
         """Test that create_image returns the redirect location."""
         responses.add(
-            responses.GET,
+            responses.POST,
             "https://ogpilot.com/api/v1/images",
             status=302,
             headers={"Location": "https://cdn.ogpilot.com/image.png"},
@@ -97,11 +99,21 @@ class TestClient:
         url = client.create_image({"title": "Test Title", "template": "default"})
         assert url == "https://cdn.ogpilot.com/image.png"
 
+        request = responses.calls[0].request
+        assert request.method == "POST"
+
+        parsed = urlparse(request.url)
+        assert parsed.path == "/api/v1/images"
+        token = parse_qs(parsed.query)["token"][0]
+        payload = jwt.decode(token, client.config.api_key, algorithms=["HS256"])
+        assert payload["title"] == "Test Title"
+        assert payload["template"] == "default"
+
     @responses.activate
     def test_create_image_json_response(self, client):
         """Test that create_image returns JSON when requested."""
         responses.add(
-            responses.GET,
+            responses.POST,
             "https://ogpilot.com/api/v1/images",
             json={"url": "https://cdn.ogpilot.com/image.png", "width": 1200},
             status=200,
@@ -114,11 +126,15 @@ class TestClient:
         assert result["url"] == "https://cdn.ogpilot.com/image.png"
         assert result["width"] == 1200
 
+        request = responses.calls[0].request
+        assert request.method == "POST"
+        assert request.headers["Accept"] == "application/json"
+
     @responses.activate
     def test_request_error_on_4xx(self, client):
         """Test that 4xx responses raise RequestError."""
         responses.add(
-            responses.GET,
+            responses.POST,
             "https://ogpilot.com/api/v1/images",
             status=400,
             body="Bad request",
@@ -131,7 +147,7 @@ class TestClient:
     def test_request_error_on_5xx(self, client):
         """Test that 5xx responses raise RequestError."""
         responses.add(
-            responses.GET,
+            responses.POST,
             "https://ogpilot.com/api/v1/images",
             status=500,
             body="Internal server error",
