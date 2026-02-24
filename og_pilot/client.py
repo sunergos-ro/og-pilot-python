@@ -7,6 +7,7 @@ HTTP client for the OG Pilot API.
 from __future__ import annotations
 
 import json as json_module
+import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 from urllib.parse import urlencode, urljoin, urlparse
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 
 
 ENDPOINT_PATH = "/api/v1/images"
+logger = logging.getLogger(__name__)
 
 
 class Client:
@@ -52,7 +54,7 @@ class Client:
         iat: int | float | datetime | None = None,
         headers: dict[str, str] | None = None,
         default: bool = False,
-    ) -> str | dict[str, Any]:
+    ) -> str | dict[str, Any] | None:
         """
         Generate an OG Pilot image URL or fetch JSON metadata.
 
@@ -65,26 +67,29 @@ class Client:
             default: If True, force path to "/" regardless of current request
 
         Returns:
-            Image URL string (final URL after redirects), or JSON metadata dict if json_response=True
-
-        Raises:
-            ConfigurationError: If API key or domain is missing
-            RequestError: If the API request fails
-            ValueError: If required parameters are missing
+            Image URL string (final URL after redirects), JSON metadata dict if
+            json_response=True, or a fail-safe fallback when generation fails:
+            None for URL mode, {"image_url": None} for JSON mode.
         """
-        # Always include a path; manual overrides win, otherwise resolve from current request
-        resolved_params = dict(params or {})
-        manual_path = resolved_params.pop("path", None)
-        resolved_params["path"] = self._resolve_path(manual_path, default)
+        try:
+            # Always include a path; manual overrides win, otherwise resolve from current request
+            resolved_params = dict(params or {})
+            manual_path = resolved_params.pop("path", None)
+            resolved_params["path"] = self._resolve_path(manual_path, default)
 
-        url = self._build_url(resolved_params, iat)
-        response = self._request(url, json_response=json_response, headers=headers or {})
+            url = self._build_url(resolved_params, iat)
+            response = self._request(url, json_response=json_response, headers=headers or {})
 
-        if json_response:
-            return cast(dict[str, Any], json_module.loads(response.text))
+            if json_response:
+                return cast(dict[str, Any], json_module.loads(response.text))
 
-        # Return the final URL after redirects (with fallbacks for unusual responses)
-        return response.url or response.headers.get("Location") or str(url)
+            # Return the final URL after redirects (with fallbacks for unusual responses)
+            return response.url or response.headers.get("Location") or str(url)
+        except Exception as e:
+            logger.error("OG Pilot create_image failed: %s", e, exc_info=True)
+            if json_response:
+                return {"image_url": None}
+            return None
 
     def _resolve_path(self, manual_path: Any, use_default: bool) -> str:
         """

@@ -45,6 +45,8 @@ print(image_url)
 
 The SDK sends a signed `POST` request to `https://ogpilot.com/api/v1/images?token=...`,
 follows redirects automatically, and returns the final image URL (or JSON when `json_response=True`).
+If generation fails (config/request/validation/etc.), it logs an error and returns a fail-safe fallback:
+`None` for URL mode, `{"image_url": None}` for JSON mode.
 
 ### Using Environment Variables
 
@@ -404,23 +406,25 @@ Create `templates/og_pilot/meta_tags.html` in your project to customize the outp
 
 ## Error Handling
 
-```python
-from og_pilot import create_image
-from og_pilot.exceptions import ConfigurationError, RequestError
+`create_image` is fail-safe and does not raise errors to your application.
+On failures (config, request, validation, or JSON parsing), it logs at error level and returns:
 
-try:
-    url = create_image(title="My Post", template="blog_post")
-except ConfigurationError as e:
-    # Missing API key or domain
-    print(f"Configuration error: {e}")
-except RequestError as e:
-    # API request failed
-    print(f"Request error: {e}")
-    if e.status_code:
-        print(f"Status code: {e.status_code}")
-except ValueError as e:
-    # Missing required parameter (e.g., title)
-    print(f"Validation error: {e}")
+- URL mode (`json_response=False`): `None`
+- JSON mode (`json_response=True`): `{"image_url": None}`
+
+```python
+import logging
+from og_pilot import create_image
+
+logging.basicConfig(level=logging.ERROR)
+
+url = create_image(title="My Post", template="blog_post")
+if url is None:
+    # Handle fallback
+    ...
+
+data = create_image(title="My Post", template="blog_post", json_response=True)
+assert data == {"image_url": None} or "url" in data
 ```
 
 ## API Reference
@@ -432,7 +436,7 @@ except ValueError as e:
 - `og_pilot.get_config()` - Get the current configuration
 - `og_pilot.client()` - Get a client using global config
 - `og_pilot.create_client(**kwargs)` - Create a new client with custom config
-- `og_pilot.create_image(params, *, json_response=False, iat=None, headers=None, default=False, **kwargs)` - Generate image URL via signed `POST /api/v1/images` (defaults to `page` template)
+- `og_pilot.create_image(params, *, json_response=False, iat=None, headers=None, default=False, **kwargs)` - Generate image URL via signed `POST /api/v1/images` (defaults to `page` template). Fail-safe on errors: returns `None` (URL mode) or `{"image_url": None}` (JSON mode) and logs at error level.
 - `og_pilot.create_blog_post_image(...)`
 - `og_pilot.create_podcast_image(...)`
 - `og_pilot.create_product_image(...)`

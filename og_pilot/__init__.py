@@ -16,7 +16,7 @@ from og_pilot.request_context import (
     with_request_context,
 )
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __all__ = [
     "Client",
     "Configuration",
@@ -132,7 +132,7 @@ def create_image(
     headers: dict[str, str] | None = None,
     default: bool = False,
     **kwargs: Any,
-) -> str | dict[str, Any]:
+) -> str | dict[str, Any] | None:
     """
     Generate an OG Pilot image URL using the global configuration.
 
@@ -145,7 +145,8 @@ def create_image(
         **kwargs: Additional template parameters (merged with params)
 
     Returns:
-        Image URL string or JSON metadata dict if json_response=True
+        Image URL string, JSON metadata dict if json_response=True, or fail-safe
+        fallbacks on error (None for URL mode, {"image_url": None} for JSON mode).
 
     Example:
         >>> import og_pilot
@@ -174,7 +175,7 @@ def create_blog_post_image(
     headers: dict[str, str] | None = None,
     default: bool = False,
     **kwargs: Any,
-) -> str | dict[str, Any]:
+) -> str | dict[str, Any] | None:
     """Generate a blog post image URL using template='blog_post'."""
     return _create_template_image(
         "blog_post",
@@ -195,7 +196,7 @@ def create_podcast_image(
     headers: dict[str, str] | None = None,
     default: bool = False,
     **kwargs: Any,
-) -> str | dict[str, Any]:
+) -> str | dict[str, Any] | None:
     """Generate a podcast image URL using template='podcast'."""
     return _create_template_image(
         "podcast",
@@ -216,7 +217,7 @@ def create_product_image(
     headers: dict[str, str] | None = None,
     default: bool = False,
     **kwargs: Any,
-) -> str | dict[str, Any]:
+) -> str | dict[str, Any] | None:
     """Generate a product image URL using template='product'."""
     return _create_template_image(
         "product",
@@ -237,7 +238,7 @@ def create_event_image(
     headers: dict[str, str] | None = None,
     default: bool = False,
     **kwargs: Any,
-) -> str | dict[str, Any]:
+) -> str | dict[str, Any] | None:
     """Generate an event image URL using template='event'."""
     return _create_template_image(
         "event",
@@ -258,7 +259,7 @@ def create_book_image(
     headers: dict[str, str] | None = None,
     default: bool = False,
     **kwargs: Any,
-) -> str | dict[str, Any]:
+) -> str | dict[str, Any] | None:
     """Generate a book image URL using template='book'."""
     return _create_template_image(
         "book",
@@ -279,7 +280,7 @@ def create_company_image(
     headers: dict[str, str] | None = None,
     default: bool = False,
     **kwargs: Any,
-) -> str | dict[str, Any]:
+) -> str | dict[str, Any] | None:
     """Generate a company image URL using template='company'."""
     return _create_template_image(
         "company",
@@ -300,7 +301,7 @@ def create_portfolio_image(
     headers: dict[str, str] | None = None,
     default: bool = False,
     **kwargs: Any,
-) -> str | dict[str, Any]:
+) -> str | dict[str, Any] | None:
     """Generate a portfolio image URL using template='portfolio'."""
     return _create_template_image(
         "portfolio",
@@ -322,7 +323,7 @@ def _create_template_image(
     headers: dict[str, str] | None = None,
     default: bool = False,
     **kwargs: Any,
-) -> str | dict[str, Any]:
+) -> str | dict[str, Any] | None:
     merged_params = {**(params or {}), **kwargs, "template": template_name}
     return client().create_image(
         merged_params,

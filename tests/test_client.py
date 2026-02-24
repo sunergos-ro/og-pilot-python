@@ -1,5 +1,6 @@
 """Tests for og_pilot.client module."""
 
+import logging
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 
@@ -9,7 +10,6 @@ import responses
 
 from og_pilot.client import Client, _normalize_iat
 from og_pilot.config import Configuration
-from og_pilot.exceptions import ConfigurationError, RequestError
 
 
 class TestNormalizeIat:
@@ -61,26 +61,38 @@ class TestClient:
         client = Client(config)
         assert client.config == config
 
-    def test_api_key_missing_raises_error(self):
-        """Test that missing API key raises ConfigurationError."""
+    def test_api_key_missing_returns_none_and_logs_error(self, caplog):
+        """Test that missing API key returns None and logs an error."""
         config = Configuration(domain="test.com")
         client = Client(config)
 
-        with pytest.raises(ConfigurationError, match="API key is missing"):
-            client.create_image({"title": "Test"})
+        with caplog.at_level(logging.ERROR, logger="og_pilot.client"):
+            result = client.create_image({"title": "Test"})
 
-    def test_domain_missing_raises_error(self):
-        """Test that missing domain raises ConfigurationError."""
+        assert result is None
+        assert "OG Pilot create_image failed" in caplog.text
+        assert "API key is missing" in caplog.text
+
+    def test_domain_missing_returns_none_and_logs_error(self, caplog):
+        """Test that missing domain returns None and logs an error."""
         config = Configuration(api_key="test-key-12345678")
         client = Client(config)
 
-        with pytest.raises(ConfigurationError, match="domain is missing"):
-            client.create_image({"title": "Test"})
+        with caplog.at_level(logging.ERROR, logger="og_pilot.client"):
+            result = client.create_image({"title": "Test"})
 
-    def test_title_required(self, client):
-        """Test that title is required."""
-        with pytest.raises(ValueError, match="title is required"):
-            client.create_image({"template": "default"})
+        assert result is None
+        assert "OG Pilot create_image failed" in caplog.text
+        assert "domain is missing" in caplog.text
+
+    def test_title_missing_returns_none_and_logs_error(self, client, caplog):
+        """Test that missing title returns None and logs an error."""
+        with caplog.at_level(logging.ERROR, logger="og_pilot.client"):
+            result = client.create_image({"template": "default"})
+
+        assert result is None
+        assert "OG Pilot create_image failed" in caplog.text
+        assert "title is required" in caplog.text
 
     def test_api_key_prefix(self, client):
         """Test that API key prefix is first 8 characters."""
@@ -143,8 +155,8 @@ class TestClient:
         assert request.headers["Accept"] == "application/json"
 
     @responses.activate
-    def test_request_error_on_4xx(self, client):
-        """Test that 4xx responses raise RequestError."""
+    def test_request_error_on_4xx_returns_none_and_logs(self, client, caplog):
+        """Test that 4xx responses do not raise and return None."""
         responses.add(
             responses.POST,
             "https://ogpilot.com/api/v1/images",
@@ -152,12 +164,16 @@ class TestClient:
             body="Bad request",
         )
 
-        with pytest.raises(RequestError, match="status 400"):
-            client.create_image({"title": "Test"})
+        with caplog.at_level(logging.ERROR, logger="og_pilot.client"):
+            result = client.create_image({"title": "Test"})
+
+        assert result is None
+        assert "OG Pilot create_image failed" in caplog.text
+        assert "status 400" in caplog.text
 
     @responses.activate
-    def test_request_error_on_5xx(self, client):
-        """Test that 5xx responses raise RequestError."""
+    def test_request_error_on_5xx_json_response_returns_fallback_and_logs(self, client, caplog):
+        """Test that 5xx responses with json_response return fallback data."""
         responses.add(
             responses.POST,
             "https://ogpilot.com/api/v1/images",
@@ -165,5 +181,9 @@ class TestClient:
             body="Internal server error",
         )
 
-        with pytest.raises(RequestError, match="status 500"):
-            client.create_image({"title": "Test"})
+        with caplog.at_level(logging.ERROR, logger="og_pilot.client"):
+            result = client.create_image({"title": "Test"}, json_response=True)
+
+        assert result == {"image_url": None}
+        assert "OG Pilot create_image failed" in caplog.text
+        assert "status 500" in caplog.text
