@@ -16,7 +16,7 @@ from og_pilot.request_context import (
     with_request_context,
 )
 
-__version__ = "0.4.3"
+__version__ = "0.4.4"
 __all__ = [
     "Client",
     "Configuration",
@@ -66,6 +66,7 @@ def configure(**kwargs: Any) -> Configuration:
         open_timeout: Connection timeout in seconds (default: 5)
         read_timeout: Read timeout in seconds (default: 10)
         strip_extensions: When True, file extensions are removed from resolved paths (default: True)
+        strip_query_parameters: When True, query parameters are stripped from resolved paths before signing (default: False)
 
     Returns:
         The updated Configuration instance
@@ -109,6 +110,7 @@ def create_client(**kwargs: Any) -> Client:
         open_timeout: Connection timeout in seconds
         read_timeout: Read timeout in seconds
         strip_extensions: When True, file extensions are removed from resolved paths (default: True)
+        strip_query_parameters: When True, query parameters are stripped from resolved paths before signing (default: False)
 
     Returns:
         A new Client instance

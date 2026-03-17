@@ -136,6 +136,9 @@ class Client:
         if self.config.strip_extensions:
             cleaned = self._strip_extension(cleaned)
 
+        if self.config.strip_query_parameters:
+            cleaned = self._drop_query_parameters(cleaned)
+
         return cleaned
 
     def _strip_extension(self, path: str) -> str:
@@ -175,6 +178,13 @@ class Client:
             result = "/"
 
         return f"{result}?{query}" if query is not None else result
+
+    def _drop_query_parameters(self, path: str) -> str:
+        """
+        Remove the query string from the resolved path if present.
+        """
+        question_idx = path.find("?")
+        return path[:question_idx] if question_idx >= 0 else path
 
     def _request(
         self,

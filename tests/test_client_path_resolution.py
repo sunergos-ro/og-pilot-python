@@ -143,3 +143,9 @@ class TestNormalizePath:
         """Test that query string is preserved."""
         path = client._normalize_path("/foo?bar=baz&qux=1")
         assert path == "/foo?bar=baz&qux=1"
+
+    def test_strip_query_parameters_removes_query_when_enabled(self, client):
+        """Test that query string is dropped when strip_query_parameters is True."""
+        client.config.strip_query_parameters = True
+        path = client._normalize_path("/foo?bar=baz&qux=1")
+        assert path == "/foo"

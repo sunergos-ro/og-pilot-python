@@ -18,6 +18,7 @@ class TestConfiguration:
             assert config.base_url == DEFAULT_BASE_URL
             assert config.open_timeout == 5.0
             assert config.read_timeout == 10.0
+            assert config.strip_query_parameters is False
 
     def test_reads_from_env_vars(self):
         """Test that config reads from environment variables."""
@@ -44,9 +45,16 @@ class TestConfiguration:
             config = Configuration(
                 api_key="explicit-key",
                 domain="explicit.example.com",
+                strip_query_parameters=True,
             )
             assert config.api_key == "explicit-key"
             assert config.domain == "explicit.example.com"
+            assert config.strip_query_parameters is True
+
+    def test_strip_query_parameters_can_be_enabled(self):
+        """Test enabling strip_query_parameters explicitly."""
+        config = Configuration(strip_query_parameters=True)
+        assert config.strip_query_parameters is True
 
     def test_custom_timeouts(self):
         """Test custom timeout values."""

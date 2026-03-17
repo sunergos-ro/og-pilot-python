@@ -706,6 +706,28 @@ og_pilot.create_image(title="Docs", path="/docs.php")
 # Dotfiles are unchanged: /.hidden stays /.hidden
 ```
 
+### Strip query parameters
+
+When `strip_query_parameters` is enabled, the client removes the query string
+from every resolved path before it builds the signed payload. This keeps
+analytics grouped under the canonical path even when URLs differ only by
+tracking or pagination parameters. It works alongside `strip_extensions`, so
+`/archive.tar.gz?ref=campaign` resolves to `"/archive"` when both options are
+enabled.
+
+```python
+og_pilot.configure(
+    api_key="your-api-key",
+    domain="example.com",
+    strip_query_parameters=True,
+)
+
+# All of these resolve to "/docs":
+og_pilot.create_image(title="Docs", path="/docs")
+og_pilot.create_image(title="Docs", path="/docs?ref=main")
+og_pilot.create_image(title="Docs", path="https://example.com/docs?ref=campaign")
+```
+
 ### Custom Client Instance
 
 For multiple configurations or dependency injection:
@@ -749,6 +771,7 @@ OG_PILOT = {
     # 'OPEN_TIMEOUT': 5,
     # 'READ_TIMEOUT': 10,
     # 'STRIP_EXTENSIONS': True,
+    # 'STRIP_QUERY_PARAMETERS': True,
 }
 
 # Option 2: Using environment variables (no settings needed)
@@ -838,6 +861,7 @@ Create `templates/og_pilot/meta_tags.html` in your project to customize the outp
 | `open_timeout` | - | `5` | Connection timeout (seconds) |
 | `read_timeout` | - | `10` | Read timeout (seconds) |
 | `strip_extensions` | - | `True` | Strip file extensions from resolved paths (see [Strip extensions](#strip-extensions)) |
+| `strip_query_parameters` | - | `False` | Drop query parameters from resolved paths before signing (see [Strip query parameters](#strip-query-parameters)) |
 
 ## Error Handling
 

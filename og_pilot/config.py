@@ -22,6 +22,7 @@ class Configuration:
         open_timeout: Connection timeout in seconds. Defaults to 5.
         read_timeout: Read timeout in seconds. Defaults to 10.
         strip_extensions: When True, file extensions are removed from resolved paths. Defaults to True.
+        strip_query_parameters: When True, query parameters are dropped from resolved paths before signing. Defaults to False.
     """
 
     api_key: str | None = field(default_factory=lambda: os.environ.get("OG_PILOT_API_KEY"))
@@ -30,3 +31,4 @@ class Configuration:
     open_timeout: float = 5.0
     read_timeout: float = 10.0
     strip_extensions: bool = True
+    strip_query_parameters: bool = False
