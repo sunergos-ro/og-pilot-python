@@ -16,7 +16,7 @@ from og_pilot.request_context import (
     with_request_context,
 )
 
-__version__ = "0.4.4"
+__version__ = "0.4.5"
 __all__ = [
     "Client",
     "Configuration",

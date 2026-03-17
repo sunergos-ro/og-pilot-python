@@ -708,12 +708,10 @@ og_pilot.create_image(title="Docs", path="/docs.php")
 
 ### Strip query parameters
 
-When `strip_query_parameters` is enabled, the client removes the query string
-from every resolved path before it builds the signed payload. This keeps
-analytics grouped under the canonical path even when URLs differ only by
-tracking or pagination parameters. It works alongside `strip_extensions`, so
-`/archive.tar.gz?ref=campaign` resolves to `"/archive"` when both options are
-enabled.
+When `strip_query_parameters` is enabled, the client removes any query string from
+the resolved path before building the signed payload. This keeps analytics
+focused on the canonical path regardless of campaign, tracking, or pagination
+parameters, and works together with `strip_extensions`.
 
 ```python
 og_pilot.configure(
@@ -722,10 +720,10 @@ og_pilot.configure(
     strip_query_parameters=True,
 )
 
-# All of these resolve to "/docs":
-og_pilot.create_image(title="Docs", path="/docs")
-og_pilot.create_image(title="Docs", path="/docs?ref=main")
-og_pilot.create_image(title="Docs", path="https://example.com/docs?ref=campaign")
+# All of these normalize to "/news" before the JWT is generated:
+og_pilot.create_image(title="News", path="/news")
+og_pilot.create_image(title="News", path="/news?utm_source=weekly")
+og_pilot.create_image(title="News", path="https://example.com/news?ref=api")
 ```
 
 ### Custom Client Instance
