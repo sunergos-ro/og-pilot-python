@@ -84,7 +84,8 @@ class Client:
                 return cast(dict[str, Any], json_module.loads(response.text))
 
             # Return the final URL after redirects (with fallbacks for unusual responses)
-            return response.url or response.headers.get("Location") or str(url)
+            image_url = response.url or response.headers.get("Location") or str(url)
+            return None if self._is_status_placeholder(image_url) else image_url
         except Exception as e:
             logger.error("OG Pilot create_image failed: %s", e, exc_info=True)
             if json_response:
@@ -185,6 +186,12 @@ class Client:
         """
         question_idx = path.find("?")
         return path[:question_idx] if question_idx >= 0 else path
+
+    @staticmethod
+    def _is_status_placeholder(url: str) -> bool:
+        """Check if URL is a status placeholder (processing/failed)."""
+        import re
+        return bool(re.search(r"/status/(?:processing|failed)\.(?:jpg|png)$", url))
 
     def _request(
         self,
