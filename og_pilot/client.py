@@ -73,7 +73,7 @@ class Client:
         """
         try:
             # Always include a path; manual overrides win, otherwise resolve from current request
-            resolved_params = dict(params or {})
+            resolved_params = self._apply_configured_image_defaults(dict(params or {}))
             manual_path = resolved_params.pop("path", None)
             resolved_params["path"] = self._resolve_path(manual_path, default)
 
@@ -91,6 +91,20 @@ class Client:
             if json_response:
                 return {"image_url": None}
             return None
+
+    def _apply_configured_image_defaults(self, params: dict[str, Any]) -> dict[str, Any]:
+        """Fill in delivery options from client configuration when omitted."""
+        defaults = {
+            "image_type": self.config.image_type,
+            "quality": self.config.quality,
+            "max_bytes": self.config.max_bytes,
+        }
+
+        for key, value in defaults.items():
+            if value is not None and key not in params:
+                params[key] = value
+
+        return params
 
     def _resolve_path(self, manual_path: Any, use_default: bool) -> str:
         """

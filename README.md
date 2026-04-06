@@ -29,6 +29,9 @@ og_pilot.configure(
     api_key="your-api-key",
     domain="example.com",
     # strip_extensions=True,
+    image_type="webp",
+    quality=82,
+    max_bytes=220000,
 )
 
 # Generate an image URL
@@ -47,6 +50,10 @@ The SDK sends a signed `POST` request to `https://ogpilot.com/api/v1/images?toke
 follows redirects automatically, and returns the final image URL (or JSON when `json_response=True`).
 If generation fails (config/request/validation/etc.), it logs an error and returns a fail-safe fallback:
 `None` for URL mode, `{"image_url": None}` for JSON mode.
+
+You can set default delivery settings globally with `configure(...)` or your
+Django settings. Per-call `image_type`, `quality`, and `max_bytes` values
+still override those defaults when you need a one-off response format.
 
 ### Using Environment Variables
 
@@ -770,6 +777,9 @@ OG_PILOT = {
     # 'READ_TIMEOUT': 10,
     # 'STRIP_EXTENSIONS': True,
     # 'STRIP_QUERY_PARAMETERS': True,
+    # 'IMAGE_TYPE': 'webp',
+    # 'QUALITY': 82,
+    # 'MAX_BYTES': 220000,
 }
 
 # Option 2: Using environment variables (no settings needed)
@@ -860,6 +870,9 @@ Create `templates/og_pilot/meta_tags.html` in your project to customize the outp
 | `read_timeout` | - | `10` | Read timeout (seconds) |
 | `strip_extensions` | - | `True` | Strip file extensions from resolved paths (see [Strip extensions](#strip-extensions)) |
 | `strip_query_parameters` | - | `False` | Drop query parameters from resolved paths before signing (see [Strip query parameters](#strip-query-parameters)) |
+| `image_type` | - | `None` | Default delivered image format: `jpeg`, `png`, `webp`, or `gif` |
+| `quality` | - | `None` | Default delivered image quality from `1` to `100` |
+| `max_bytes` | - | `None` | Default maximum delivered image size in bytes |
 
 ## Error Handling
 

@@ -26,6 +26,10 @@ class OgPilotConfig(AppConfig):
             "BASE_URL": "base_url",
             "OPEN_TIMEOUT": "open_timeout",
             "READ_TIMEOUT": "read_timeout",
+            "STRIP_EXTENSIONS": "strip_extensions",
+            "IMAGE_TYPE": "image_type",
+            "QUALITY": "quality",
+            "MAX_BYTES": "max_bytes",
             "STRIP_QUERY_PARAMETERS": "strip_query_parameters",
         }
 

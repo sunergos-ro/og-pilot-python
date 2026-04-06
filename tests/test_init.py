@@ -34,10 +34,16 @@ class TestModuleFunctions:
         og_pilot.configure(
             api_key="test-key",
             domain="test.com",
+            image_type="webp",
+            quality=82,
+            max_bytes=220000,
         )
         config = og_pilot.get_config()
         assert config.api_key == "test-key"
         assert config.domain == "test.com"
+        assert config.image_type == "webp"
+        assert config.quality == 82
+        assert config.max_bytes == 220000
 
     def test_configure_partial_update(self):
         """Test that configure can do partial updates."""

@@ -16,7 +16,7 @@ from og_pilot.request_context import (
     with_request_context,
 )
 
-__version__ = "0.4.6"
+__version__ = "0.4.7"
 __all__ = [
     "Client",
     "Configuration",
@@ -67,6 +67,9 @@ def configure(**kwargs: Any) -> Configuration:
         read_timeout: Read timeout in seconds (default: 10)
         strip_extensions: When True, file extensions are removed from resolved paths (default: True)
         strip_query_parameters: When True, query parameters are stripped from resolved paths before signing (default: False)
+        image_type: Default delivered image format (jpeg/png/webp/gif)
+        quality: Default delivered image quality (1-100)
+        max_bytes: Default delivered image byte cap
 
     Returns:
         The updated Configuration instance
@@ -111,6 +114,9 @@ def create_client(**kwargs: Any) -> Client:
         read_timeout: Read timeout in seconds
         strip_extensions: When True, file extensions are removed from resolved paths (default: True)
         strip_query_parameters: When True, query parameters are stripped from resolved paths before signing (default: False)
+        image_type: Default delivered image format (jpeg/png/webp/gif)
+        quality: Default delivered image quality (1-100)
+        max_bytes: Default delivered image byte cap
 
     Returns:
         A new Client instance

@@ -23,6 +23,9 @@ class Configuration:
         read_timeout: Read timeout in seconds. Defaults to 10.
         strip_extensions: When True, file extensions are removed from resolved paths. Defaults to True.
         strip_query_parameters: When True, query parameters are dropped from resolved paths before signing. Defaults to False.
+        image_type: Default delivered image format (jpeg/png/webp/gif). Defaults to None.
+        quality: Default delivered image quality (1-100). Defaults to None.
+        max_bytes: Default delivered image byte cap. Defaults to None.
     """
 
     api_key: str | None = field(default_factory=lambda: os.environ.get("OG_PILOT_API_KEY"))
@@ -32,3 +35,6 @@ class Configuration:
     read_timeout: float = 10.0
     strip_extensions: bool = True
     strip_query_parameters: bool = False
+    image_type: str | None = None
+    quality: int | None = None
+    max_bytes: int | None = None

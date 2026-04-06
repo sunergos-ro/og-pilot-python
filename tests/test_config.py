@@ -19,6 +19,9 @@ class TestConfiguration:
             assert config.open_timeout == 5.0
             assert config.read_timeout == 10.0
             assert config.strip_query_parameters is False
+            assert config.image_type is None
+            assert config.quality is None
+            assert config.max_bytes is None
 
     def test_reads_from_env_vars(self):
         """Test that config reads from environment variables."""
@@ -46,10 +49,16 @@ class TestConfiguration:
                 api_key="explicit-key",
                 domain="explicit.example.com",
                 strip_query_parameters=True,
+                image_type="webp",
+                quality=82,
+                max_bytes=220000,
             )
             assert config.api_key == "explicit-key"
             assert config.domain == "explicit.example.com"
             assert config.strip_query_parameters is True
+            assert config.image_type == "webp"
+            assert config.quality == 82
+            assert config.max_bytes == 220000
 
     def test_strip_query_parameters_can_be_enabled(self):
         """Test enabling strip_query_parameters explicitly."""

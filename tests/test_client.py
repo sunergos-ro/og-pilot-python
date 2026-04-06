@@ -115,7 +115,15 @@ class TestClient:
             content_type="image/png",
         )
 
-        url = client.create_image({"title": "Test Title", "template": "default"})
+        url = client.create_image(
+            {
+                "title": "Test Title",
+                "template": "default",
+                "image_type": "webp",
+                "quality": 82,
+                "max_bytes": 220000,
+            }
+        )
         assert url == "https://cdn.ogpilot.com/image.png"
         assert len(responses.calls) == 2
 
@@ -128,6 +136,9 @@ class TestClient:
         payload = jwt.decode(token, client.config.api_key, algorithms=["HS256"])
         assert payload["title"] == "Test Title"
         assert payload["template"] == "default"
+        assert payload["image_type"] == "webp"
+        assert payload["quality"] == 82
+        assert payload["max_bytes"] == 220000
 
         second_request = responses.calls[1].request
         assert second_request.method == "GET"
@@ -153,6 +164,63 @@ class TestClient:
         request = responses.calls[0].request
         assert request.method == "POST"
         assert request.headers["Accept"] == "application/json"
+
+    @responses.activate
+    def test_create_image_applies_configured_delivery_defaults(self, config):
+        """Test that configured delivery defaults are added to the signed payload."""
+        config.image_type = "webp"
+        config.quality = 82
+        config.max_bytes = 220000
+        client = Client(config)
+
+        responses.add(
+            responses.POST,
+            "https://ogpilot.com/api/v1/images",
+            status=200,
+            body="",
+        )
+
+        client.create_image({"title": "Configured defaults"})
+
+        request = responses.calls[0].request
+        token = parse_qs(urlparse(request.url).query)["token"][0]
+        payload = jwt.decode(token, client.config.api_key, algorithms=["HS256"])
+
+        assert payload["image_type"] == "webp"
+        assert payload["quality"] == 82
+        assert payload["max_bytes"] == 220000
+
+    @responses.activate
+    def test_create_image_prefers_explicit_delivery_options(self, config):
+        """Test that explicit delivery options override configured defaults."""
+        config.image_type = "webp"
+        config.quality = 82
+        config.max_bytes = 220000
+        client = Client(config)
+
+        responses.add(
+            responses.POST,
+            "https://ogpilot.com/api/v1/images",
+            status=200,
+            body="",
+        )
+
+        client.create_image(
+            {
+                "title": "Explicit delivery overrides",
+                "image_type": "png",
+                "quality": 65,
+                "max_bytes": 180000,
+            }
+        )
+
+        request = responses.calls[0].request
+        token = parse_qs(urlparse(request.url).query)["token"][0]
+        payload = jwt.decode(token, client.config.api_key, algorithms=["HS256"])
+
+        assert payload["image_type"] == "png"
+        assert payload["quality"] == 65
+        assert payload["max_bytes"] == 180000
 
     @responses.activate
     def test_request_error_on_4xx_returns_none_and_logs(self, client, caplog):
